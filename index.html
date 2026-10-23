@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>nytta – Status</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 0; padding: 32px 20px; color: #1c1c1e; background: #fff; }
+      main { max-width: 480px; margin: 0 auto; }
+      h1 { font-size: 20px; margin: 0 0 12px; }
+      p { font-size: 16px; line-height: 1.5; margin: 0 0 12px; }
+      ul { padding: 0; list-style: none; }
+      li { padding: 6px 0; }
+      small { color: #6b6b70; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1 id="titel">nytta – Status</h1>
+      <p id="meldung">Lade …</p>
+      <ul id="komponenten"></ul>
+      <p><small id="stand"></small></p>
+    </main>
+    <script>
+      // Zeigt status.json (liegt neben dieser Seite). Geschrieben wird sie mit `npm run status:setzen`.
+      var NAMEN = { login: 'Anmeldung', daten: 'Daten', bilder: 'Bilder', push: 'Benachrichtigungen' };
+      var TITEL = { ok: 'Alles in Ordnung', gestoert: 'Störung', wartung: 'Wartung' };
+      fetch('status.json?t=' + Date.now(), { cache: 'no-store' })
+        .then(function (r) { return r.json(); })
+        .then(function (s) {
+          document.getElementById('titel').textContent = 'nytta – ' + (TITEL[s.schwere] || 'Status');
+          document.getElementById('meldung').textContent = s.meldung || (s.schwere === 'ok' ? 'Keine Störung bekannt.' : '');
+          document.getElementById('stand').textContent = s.stand ? 'Stand: ' + s.stand : '';
+          var ul = document.getElementById('komponenten');
+          Object.keys(s.komponenten || {}).forEach(function (k) {
+            var li = document.createElement('li');
+            li.textContent = (NAMEN[k] || k) + ': ' + (s.komponenten[k] === 'ok' ? 'in Ordnung' : s.komponenten[k] === 'wartung' ? 'Wartung' : 'gestört');
+            ul.appendChild(li);
+          });
+        })
+        .catch(function () {
+          document.getElementById('meldung').textContent = 'Status konnte nicht geladen werden.';
+        });
+    </script>
+  </body>
+</html>
